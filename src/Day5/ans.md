@@ -19,7 +19,7 @@
     * Time Complexity: O(k) where k = length of prefix
       Space: O(n * m) where n = number of users, m = average username length
 * we can use TreeMap and store in sorted manner and get result based on sorting eg: NavigableMap<String, String> results =
-  users.subMap("am", "an"); where we can get result starting from am>= and less then <an
+  users.subMap("am", "an"); where we can get result starting from am>= and less than <an
     * Time Complexity: O(log n + k) where k = number of matches
       Better than: Scanning all entries in HashMap
 * we can also go for hybrid approach using trie and hashmap 
