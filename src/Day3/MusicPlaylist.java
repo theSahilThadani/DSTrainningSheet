@@ -1,132 +1,225 @@
 package Day3;
 
-import org.w3c.dom.Node;
-
 import java.util.Scanner;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
-class node<T> {
-    T data;
-    node<T> next;
-    node<T> prev;
-    public node(T data) {
-        this.data = data;
-        this.next = null;
-        this.prev = null;
+class LinkedList<T> implements Iterable<T> {
+
+
+    private static class Node<T> {
+        T data;
+        Node<T> next;
+        Node<T> prev;
+
+        Node(T data) {
+            this.data = data;
+            this.next = null;
+            this.prev = null;
+        }
     }
-}
 
-class LinkedList <T>{
-    private node<T> head;
-    private node<T> tail;
+    private Node<T> head;
+    private Node<T> tail;
     private int size;
 
-    LinkedList(){
+    public LinkedList() {
+        this.head = null;
+        this.tail = null;
+        this.size = 0;
+    }
+
+    public boolean isEmpty() {
+        return head == null;
+    }
+
+    public int size() {
+        return size;
+    }
+
+    //used to implement DRY
+    private void initializeFirstNode(Node<T> newNode) {
+        head = newNode;
+        tail = newNode;
+    }
+
+
+     // Time Complexity: O(1)
+    public void addFirst(T data) {
+        Node<T> newNode = new Node<>(data);
+
+        if (isEmpty()) {
+            initializeFirstNode(newNode);
+        } else {
+            newNode.next = head;
+            head.prev = newNode;
+            head = newNode;
+        }
+
+        size++;
+    }
+
+
+
+    // Time Complexity: O(1)
+
+    public void addLast(T data) {
+        Node<T> newNode = new Node<>(data);
+
+        if (isEmpty()) {
+            initializeFirstNode(newNode);
+        } else {
+            newNode.prev = tail;
+            tail.next = newNode;
+            tail = newNode;
+        }
+
+        size++;
+    }
+
+    // Time Complexity: O(1)
+    public T removeFirst() {
+        if (isEmpty()) {
+            throw new NoSuchElementException("List is empty");
+        }
+
+        T data = head.data;
+        Node<T> oldHead = head;
+
+        head = head.next;
+
+        if (head != null) {
+            head.prev = null;
+        } else {
+            tail = null;
+        }
+
+        // Cleared all references to help GC
+        oldHead.next = null;
+        oldHead.prev = null;
+        oldHead.data = null;
+
+        size--;
+        return data;
+    }
+
+    // Time Complexity: O(1)
+    public T removeLast() {
+        if (isEmpty()) {
+            throw new NoSuchElementException("List is empty");
+        }
+
+        T data = tail.data;
+        Node<T> oldTail = tail;
+
+        tail = tail.prev;
+
+        if (tail != null) {
+            tail.next = null;
+        } else {
+            head = null;
+        }
+
+
+        oldTail.next = null;
+        oldTail.prev = null;
+        oldTail.data = null;
+
+        size--;
+        return data;
+    }
+
+
+     // Display all elements
+    public void display() {
+        if (isEmpty()) {
+            System.out.println("Playlist is empty");
+            return;
+        }
+
+        System.out.println("\n" + "═".repeat(70));
+        System.out.println("🎵 CURRENT PLAYLIST (" + size + " songs)");
+        System.out.println("═".repeat(70));
+
+        int position = 1;
+        for (T item : this) {
+            System.out.printf("%2d. %s\n", position++, item);
+        }
+
+        System.out.println("═".repeat(70) + "\n");
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        return new Iterator<>() {
+            private Node<T> current = head;
+
+            @Override
+            public boolean hasNext() {
+                return current != null;
+            }
+
+            @Override
+            public T next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
+                }
+                T data = current.data;
+                current = current.next;
+                return data;
+            }
+        };
+    }
+
+
+    public void clear() {
         head = null;
         tail = null;
         size = 0;
     }
-
-    public boolean isEmpty(){
-        return head == null;
-    }
-    public int size(){
-        return size;
-    }
-    public void add(T data){
-        node<T> newNode = new node<T>(data);
-        if(isEmpty()){
-            tail = newNode;
-            head = newNode;
-        }else {
-            head.prev = newNode;
-            newNode.next = head;
-            head = newNode;
-        }
-
-        size++;
-    }
-    public void addLast(T data){
-        node<T> newNode = new node<>(data);
-
-        if (isEmpty()) {
-            head = newNode;
-            tail = newNode;
-        } else {
-            tail.next = newNode;
-            newNode.prev = tail;
-            tail = newNode;
-        }
-        size++;
-    }
-    public T removeFirst(){
-        if(isEmpty()){
-            return null;
-        }
-        node<T> temp = head;
-        if(head.next != null){
-            head.next.prev = null;
-        }
-        head = head.next;
-        size--;
-        if(isEmpty()){
-            tail = null;
-        }
-        return temp.data;
-    }
-    public T removeLast(){
-        if(isEmpty()){
-            return null;
-        }
-        node<T> temp = tail;
-        if(tail.prev != null){
-            tail.prev.next = null;
-        }
-        tail = tail.prev;
-        size--;
-        if(isEmpty()){
-            head = null;
-        }
-        return temp.data;
-    }
-
-    public void displayPlaylist() {
-        if (isEmpty()) {
-            System.out.println("\n Playlist is empty\n");
-            return;
-        }
-
-        System.out.println("\n" + "=".repeat(70));
-        System.out.println("CURRENT PLAYLIST (" + size + " songs)");
-        System.out.println("=".repeat(70));
-
-        node<T> current = head;
-        int position = 1;
-        while (current != null) {
-            System.out.println(position + ". " + current.data);
-            current = current.next;
-            position++;
-        }
-        System.out.println("=".repeat(70) + "\n");
-    }
-
 }
 
 
-class Song{
-    long id;
-    String name;
-    String artist;
-    Song(long id, String name, String artist){
+class Song {
+    private final long id;
+    private final String name;
+    private final String artist;
+
+    Song(long id, String name, String artist) {
+        if (id <= 0) {
+            throw new IllegalArgumentException("ID must be positive");
+        }
+        if (name == null || name.trim().isEmpty()) {
+            throw new IllegalArgumentException("Name cannot be empty");
+        }
+        if (artist == null || artist.trim().isEmpty()) {
+            throw new IllegalArgumentException("Artist cannot be empty");
+        }
+
         this.id = id;
-        this.name = name;
-        this.artist = artist;
+        this.name = name.trim();
+        this.artist = artist.trim();
     }
+
+    public long getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getArtist() {
+        return artist;
+    }
+
     @Override
     public String toString() {
         return String.format("[ID: %d] %s - %s", id, name, artist);
     }
-
 }
+
+
 public class MusicPlaylist {
     static void displayMenu() {
         System.out.println("MUSIC PLAYLIST");
@@ -139,80 +232,114 @@ public class MusicPlaylist {
         System.out.print("Enter your choice: ");
     }
 
-    public static void main(String[] args) {
-        LinkedList<Song> playlist = new LinkedList<>();
-        Scanner sc = new Scanner(System.in);
-        long songId = 1;
-        boolean running = true;
 
-        System.out.println("Music Playlist started\n");
+    private static Song createSong(Scanner sc, long songId) {
+        System.out.print("Enter song name: ");
+        String songName = sc.nextLine().trim();
+        System.out.print("Enter artist name: ");
+        String artistName = sc.nextLine().trim();
 
-        while (running) {
-            displayMenu();
-            int choice = sc.nextInt();
-            sc.nextLine();
-
-            switch (choice) {
-                case 1:
-                    System.out.print("Enter song name: ");
-                    String songName = sc.nextLine();
-                    System.out.print("Enter artist name: ");
-                    String artistName = sc.nextLine();
-
-                    Song newSong = new Song(songId, songName, artistName);
-                    playlist.addLast(newSong);
-                    songId++;
-
-                    System.out.println("Song added to playlist");
-                    break;
-
-                case 2:
-                    System.out.print("Enter song name: ");
-                    songName = sc.nextLine();
-                    System.out.print("Enter artist name: ");
-                    artistName = sc.nextLine();
-
-                    newSong = new Song(songId, songName, artistName);
-                    playlist.add(newSong);
-                    songId++;
-
-                    System.out.println("Song added to playlist");
-                    break;
-
-                case 3:
-                    playlist.displayPlaylist();
-                    break;
-
-                case 4:
-                    if (playlist.isEmpty()) {
-                        System.out.println("Playlist is empty");
-                    } else {
-                        Song removed = playlist.removeFirst();
-                        System.out.println("Removed from top: " + removed);
-                        System.out.println("removed successfully");
-                    }
-                    break;
-
-                case 5:
-                    if (playlist.isEmpty()) {
-                        System.out.println("Playlist is empty");
-                    } else {
-                        Song removed = playlist.removeLast();
-                        System.out.println("Removed from end: " + removed);
-                        System.out.println("Song removed successfully");
-                    }
-                    break;
-
-                case 6:
-                    System.out.println("Thank you for using");
-                    running = false;
-                    break;
-
-                default:
-                    System.out.println("Invalid choice");
-            }
+        if (songName.isEmpty() || artistName.isEmpty()) {
+            System.out.println("Song name and artist cannot be empty.");
+            return null;
         }
 
-        sc.close();
+        return new Song(songId, songName, artistName);
+    }
+    private static long addSongToEnd(Scanner sc, LinkedList<Song> playlist, long songId) {
+        Song newSong = createSong(sc, songId);
+        if (newSong == null) {
+            return songId;
+        }
+        playlist.addLast(newSong);
+        System.out.println("Song added to end of playlist");
+
+        return songId + 1;
+    }
+
+    private static long addSongToTop(Scanner sc, LinkedList<Song> playlist, long songId) {
+        Song newSong = createSong(sc, songId);
+        if (newSong == null) {
+            return songId;
+        }
+        playlist.addFirst(newSong);
+        System.out.println("Song added to top of playlist");
+
+        return songId + 1;
+    }
+
+    private static void removeFromTop(LinkedList<Song> playlist) {
+        Song removed = playlist.removeFirst();
+        System.out.println("Removed from top: " + removed);
+    }
+
+    private static void removeFromEnd(LinkedList<Song> playlist) {
+        Song removed = playlist.removeLast();
+        System.out.println("Removed from end: " + removed);
+    }
+
+    private static int getIntInput(Scanner sc, String prompt) {
+        while (true) {
+            try {
+                System.out.print(prompt);
+                String input = sc.nextLine().trim();
+                if (input.isEmpty()) {
+                    System.out.println("Input cannot be empty");
+                    continue;
+                }
+                return Integer.parseInt(input);
+            } catch (NumberFormatException e) {
+                System.out.println(" Invalid number. Please enter a valid integer.");
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        LinkedList<Song> playlist = new LinkedList<>();
+        long songId = 1;
+        // try with resources Guarantees Scanner is closed
+        try (Scanner sc = new Scanner(System.in)) {
+            System.out.println("Music Playlist started\n");
+            boolean running = true;
+            while (running) {
+                displayMenu();
+                int choice = sc.nextInt();
+                sc.nextLine();
+
+                try {
+                    switch (choice) {
+                        case 1:
+                            songId = addSongToEnd(sc, playlist, songId);
+                            break;
+                        case 2:
+                            songId = addSongToTop(sc, playlist, songId);
+                            break;
+                        case 3:
+                            playlist.display();
+                            break;
+                        case 4:
+                            removeFromTop(playlist);
+                            break;
+                        case 5:
+                            removeFromEnd(playlist);
+                            break;
+                        case 6:
+                            System.out.println("\n Thank you for using Music Playlist Manager");
+                            running = false;
+                            break;
+                        default:
+                            System.out.println(" Invalid choice. Please try again.");
+                    }
+                } catch (NoSuchElementException e) {
+                    System.out.println("Error: " + e.getMessage());
+                }
+            }
+        }
+        catch (Exception e) {
+
+            //here scanner will close after exception happens
+            System.err.println("Error: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 }
