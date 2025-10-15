@@ -201,17 +201,6 @@ class Song {
         this.artist = artist.trim();
     }
 
-    public long getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getArtist() {
-        return artist;
-    }
 
     @Override
     public String toString() {
@@ -276,22 +265,6 @@ public class MusicPlaylist {
     private static void removeFromEnd(LinkedList<Song> playlist) {
         Song removed = playlist.removeLast();
         System.out.println("Removed from end: " + removed);
-    }
-
-    private static int getIntInput(Scanner sc, String prompt) {
-        while (true) {
-            try {
-                System.out.print(prompt);
-                String input = sc.nextLine().trim();
-                if (input.isEmpty()) {
-                    System.out.println("Input cannot be empty");
-                    continue;
-                }
-                return Integer.parseInt(input);
-            } catch (NumberFormatException e) {
-                System.out.println(" Invalid number. Please enter a valid integer.");
-            }
-        }
     }
 
     public static void main(String[] args) {
