@@ -78,13 +78,6 @@ public class MessageHistory {
         return messageById.get(messageId);
     }
 
-    /**
-     * Get recent N messages (newest first)
-     * Time: O(N)
-     *
-     * @param count Number of messages to retrieve
-     * @return List of recent messages (newest first)
-     */
     //get recent messages in o(n)
     public List<Message> getRecentMessages(int count) {
         if (count <= 0) {
@@ -139,12 +132,6 @@ public class MessageHistory {
         return new ArrayList<>(headMap.values());
     }
 
-    /**
-     * Search messages by content keyword
-     * Time: O(n) [linear search through buffer]
-     *
-     * Note: For better performance at scale, use MessageSearchIndex
-     */
     //search messages by liner search
     public Set<Message> searchByContent(String keyword) {
         return searchIndex.search(keyword);
@@ -193,58 +180,13 @@ public class MessageHistory {
         return recentMessages.size();
     }
 
-
-    public int capacity() {
-        return capacity;
-    }
-
-
     public boolean isEmpty() {
         return recentMessages.isEmpty();
     }
 
-
-    public boolean isFull() {
-        return recentMessages.isFull();
-    }
-
-
     public double getLoadFactor() {
         return recentMessages.getLoadFactor();
     }
-
-
-
-    public synchronized void clear() {
-        recentMessages.clear();
-        messageById.clear();
-        timeIndex.clear();
-    }
-
-
-    public long getOldestTimestamp() {
-        if (isEmpty()) {
-            throw new NoSuchElementException("History is empty");
-        }
-        return timeIndex.firstKey();
-    }
-
-
-    public long getNewestTimestamp() {
-        if (isEmpty()) {
-            throw new NoSuchElementException("History is empty");
-        }
-        return timeIndex.lastKey();
-    }
-
-
-    public long getTimeSpan() {
-        if (isEmpty()) {
-            return 0;
-        }
-        return getNewestTimestamp() - getOldestTimestamp();
-    }
-
 
     @Override
     public String toString() {

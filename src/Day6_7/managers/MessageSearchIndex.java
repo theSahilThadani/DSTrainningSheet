@@ -89,13 +89,6 @@ public class MessageSearchIndex {
                 : Collections.emptySet();
     }
 
-    /**
-     * Search for messages containing ALL keywords (AND search)
-     * Time: O(k) where k = smallest result set
-     *
-     * Example: searchAll("hello", "world")
-     * → Returns messages containing BOTH "hello" AND "world"
-     */
     public Set<Message> searchAll(String... keywords) {
         if (keywords == null || keywords.length == 0) {
             return Collections.emptySet();

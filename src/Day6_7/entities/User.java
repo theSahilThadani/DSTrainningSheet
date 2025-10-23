@@ -77,20 +77,12 @@ public class User {
         conversations.remove(conversationId);
     }
 
-    /**
-     * Get user info (without sensitive data)
-     */
+     // Get user info DTO remove sensitive info
+
     public UserInfo toUserInfo() {
         return new UserInfo(userId, username, displayName, status, lastSeen);
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof User)) return false;
-        User user = (User) o;
-        return userId.equals(user.userId);
-    }
 
     @Override
     public int hashCode() {

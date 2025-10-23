@@ -9,18 +9,6 @@ import Day6_7.entities.Message;
 import java.util.*;
 
 
-/**
- * ChatApp - CLI integration of UserManager and ConversationManager
- *
- * Assumes the following classes exist in your project:
- * - managers.UserManager
- * - managers.ConversationManager
- * - entities.User, Message, Conversation, ...
- *
- * Run:
- *   javac -d out $(find . -name "*.java")
- *   java -cp out app.ChatApp
- */
 public class ChatApp {
 
     private final UserManager userManager;
@@ -32,10 +20,9 @@ public class ChatApp {
         this.userManager = new UserManager();
         this.conversationManager = new ConversationManager();
 
-        // optional: pre-populate some users for demo
-        userManager.registerUser("alice", "password123", "Alice");
-        userManager.registerUser("bob", "password123", "Bob");
-        userManager.registerUser("charlie", "password123", "Charlie");
+        //users for demo
+        userManager.registerUser("sahil", "password123", "sahil");
+        userManager.registerUser("hitesh", "password123", "hitesh");
     }
 
     public static void main(String[] args) {
@@ -93,7 +80,7 @@ public class ChatApp {
 
     private void printHeader() {
         System.out.println("\n" + "═".repeat(80));
-        System.out.println("🚀 CHAT APP - Integrated Demo");
+        System.out.println(" CHAT APP");
         System.out.println("═".repeat(80));
     }
 
@@ -177,7 +164,7 @@ public class ChatApp {
 
     private void listOnlineUsers() {
         List<UserInfo> online = userManager.getUsersByStatus(UserStatus.ONLINE);
-        System.out.println("\n🟢 ONLINE USERS (" + online.size() + ")");
+        System.out.println("\n ONLINE USERS (" + online.size() + ")");
         for (UserInfo ui : online) {
             System.out.println(" - " + ui);
         }

@@ -23,13 +23,8 @@ public class Conversation {
     private static final int MAX_HISTORY = 100;
     private static final int MAX_UNDO_STACK = 50;
 
-    /**
-     * Create new conversation
-     *
-     * @param conversationId Unique ID
-     * @param participants Set of user IDs (immutable copy)
-     * @param type ONE_TO_ONE or GROUP
-     */
+
+     // Create new conversation
     public Conversation(String conversationId, Set<String> participants, ConversationType type) {
         // Validation
         if (conversationId == null || conversationId.trim().isEmpty()) {
@@ -83,16 +78,8 @@ public class Conversation {
     public int getTotalMessageCount() { return history.size(); }
     public int getQueueSize() { return messageQueue.size(); }
 
-    /**
-     * Send message in conversation
-     * Time: O(log n) for indexing
-     *
-     * Flow:
-     * 1. Validate sender is participant
-     * 2. Add to message queue
-     * 3. Process queue immediately (or async in production)
-     * 4. Add to undo stack
-     */
+
+     // Send message in conversation O(log n) for indexing
     public synchronized void sendMessage(Message message) {
         if (message == null) {
             throw new IllegalArgumentException("Message cannot be null");
@@ -107,15 +94,11 @@ public class Conversation {
         // Add to queue
         messageQueue.offer(message);
 
-        // Process queue (in production: async/batch processing)
+        // Process queue
         processMessageQueue();
     }
 
-    /**
-     * Process message queue
-     * Moves messages from queue to history
-     * Updates status: PENDING → SENT → DELIVERED
-     */
+
     private synchronized void processMessageQueue() {
         while (!messageQueue.isEmpty()) {
             Message message = messageQueue.poll();
@@ -126,7 +109,7 @@ public class Conversation {
             // Add to history
             history.addMessage(message);
 
-            // Add to sender's undo stack
+            // Add to senders undo stack
             addToUndoStack(message.getSenderId(), message);
 
             // Update metadata
@@ -140,15 +123,11 @@ public class Conversation {
                 }
             }
 
-            // Update status to DELIVERED (simulated)
+            // Update status to DELIVERED
             message.updateStatus(MessageStatus.DELIVERED);
         }
     }
 
-    /**
-     * Add message to user's undo stack
-     * Maintains bounded stack (max 50 messages)
-     */
     private void addToUndoStack(String userId, Message message) {
         Deque<Message> stack = undoStacks.get(userId);
         if (stack == null) return;
@@ -161,17 +140,7 @@ public class Conversation {
         }
     }
 
-    /**
-     * Undo last message sent by user
-     * Time: O(1)
-     *
-     * Conditions:
-     * - User must be sender
-     * - Message sent within last 5 minutes
-     * - Message not yet read
-     *
-     * @return true if undone, false otherwise
-     */
+
     public synchronized boolean undoLastMessage(String userId) {
         Deque<Message> stack = undoStacks.get(userId);
         if (stack == null || stack.isEmpty()) {
@@ -181,9 +150,9 @@ public class Conversation {
 
         Message lastMessage = stack.peek();
 
-        // Check if can undo
+        // Check if you can undo
         if (!lastMessage.canUndo()) {
-            System.out.println("⚠️  Cannot undo: Message too old or already read");
+            System.out.println("  Cannot undo: Message too old or already read");
             stack.pop();  // Remove from stack anyway (can't undo anymore)
             return false;
         }
@@ -195,7 +164,7 @@ public class Conversation {
         boolean deleted = history.markAsDeleted(lastMessage.getMessageId());
 
         if (deleted) {
-            System.out.println("✅ Message undone: " + lastMessage.getMessageId());
+            System.out.println(" Message undone: " + lastMessage.getMessageId());
 
             // Decrement unread count for recipients
             for (String participantId : participants) {
@@ -211,66 +180,17 @@ public class Conversation {
         return false;
     }
 
-    /**
-     * Get recent messages
-     * Time: O(n) where n = count
-     */
+
     public List<Message> getRecentMessages(int count) {
         return history.getRecentMessages(count);
     }
 
-    /**
-     * Get all messages (excluding deleted)
-     * Time: O(n)
-     */
+
     public List<Message> getAllMessages() {
         return history.getAllMessages();
     }
 
-    /**
-     * Get message by ID
-     * Time: O(1)
-     */
-    public Message getMessageById(String messageId) {
-        return history.getMessageById(messageId);
-    }
 
-    /**
-     * Search messages by keyword
-     * Time: O(1) lookup + O(k) results
-     */
-    public Set<Message> searchMessages(String keyword) {
-        return history.searchByContent(keyword);
-    }
-
-    /**
-     * Search messages with multiple keywords (AND)
-     * Time: O(n × k) where n = keywords, k = smallest result
-     */
-    public Set<Message> searchMessagesAll(String... keywords) {
-        return history.searchByAllKeywords(keywords);
-    }
-
-    /**
-     * Get messages by sender
-     * Time: O(n)
-     */
-    public List<Message> getMessagesBySender(String senderId) {
-        return history.getMessagesBySender(senderId);
-    }
-
-    /**
-     * Get messages in time range
-     * Time: O(log n + k)
-     */
-    public List<Message> getMessagesByTimeRange(long startTime, long endTime) {
-        return history.getMessagesByTimeRange(startTime, endTime);
-    }
-
-    /**
-     * Mark messages as read by user
-     * Updates unread count and message status
-     */
     public synchronized void markAsRead(String userId) {
         if (!participants.contains(userId)) {
             throw new IllegalArgumentException("User is not a participant");
@@ -289,20 +209,7 @@ public class Conversation {
         }
     }
 
-    /**
-     * Check if user is participant
-     */
-    public boolean isParticipant(String userId) {
-        return participants.contains(userId);
-    }
 
-    /**
-     * Get other participant (for one-to-one chats)
-     *
-     * @param userId Current user ID
-     * @return Other user's ID
-     * @throws IllegalStateException if not one-to-one
-     */
     public String getOtherParticipant(String userId) {
         if (type != ConversationType.ONE_TO_ONE) {
             throw new IllegalStateException("Not a one-to-one conversation");
@@ -317,35 +224,10 @@ public class Conversation {
         throw new IllegalArgumentException("User not found in conversation");
     }
 
-    /**
-     * Get conversation age (in milliseconds)
-     */
-    public long getAge() {
-        return System.currentTimeMillis() - createdAt;
-    }
-
-    /**
-     * Get time since last activity (in milliseconds)
-     */
     public long getTimeSinceLastActivity() {
         return System.currentTimeMillis() - lastActivityAt;
     }
-    
 
-    /**
-     * Format duration for display
-     */
-    private String formatDuration(long milliseconds) {
-        long seconds = milliseconds / 1000;
-        long minutes = seconds / 60;
-        long hours = minutes / 60;
-        long days = hours / 24;
-
-        if (days > 0) return days + " days";
-        if (hours > 0) return hours + " hours";
-        if (minutes > 0) return minutes + " minutes";
-        return seconds + " seconds";
-    }
 
     @Override
     public boolean equals(Object o) {

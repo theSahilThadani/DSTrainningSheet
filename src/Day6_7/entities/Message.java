@@ -162,14 +162,6 @@ public class Message {
         return sdf.format(new java.util.Date(timestamp));
     }
 
-//    @Override
-//    public boolean equals(Object o) {
-//        if (this == o) return true;
-//        if (!(o instanceof Message)) return false;
-//        Message message = (Message) o;
-//        return messageId.equals(message.messageId);
-//    }
-
     @Override
     public int hashCode() {
         return Objects.hash(messageId);
