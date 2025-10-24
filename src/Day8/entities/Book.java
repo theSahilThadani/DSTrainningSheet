@@ -15,7 +15,7 @@ public class Book {
         this.Category = b.Category;
     }
 
-    static class Bookbuilder{
+    public static class Bookbuilder{
         private String Title;
         private String Author;
         private String ISBN;
