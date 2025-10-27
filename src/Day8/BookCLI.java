@@ -157,7 +157,7 @@ public class BookCLI {
         System.out.println("\n📖 All Books in Catalog:");
         List<Book> allBooks = bookManager.getAllBooks();
         if (allBooks.isEmpty()) {
-            System.out.println("⚠️ No books found.");
+            System.out.println("No books found.");
         } else {
             printBookList(allBooks);
         }
@@ -173,11 +173,11 @@ public class BookCLI {
         } else {
             System.out.printf("""
                     ------------------------------
-                    📘 Title: %s
-                    ✍️  Author: %s
-                    🏷️  ISBN: %s
-                    📖 Description: %s
-                    📂 Category: %s
+                    Title: %s
+                    Author: %s
+                    ISBN: %s
+                    Description: %s
+                    Category: %s
                     ------------------------------
                     """,
                     book.getTitle(),
@@ -196,10 +196,10 @@ public class BookCLI {
         for (Book b : books) {
             System.out.printf("""
                     ------------------------------
-                    📘 Title: %s
-                    ✍️  Author: %s
-                    🏷️  ISBN: %s
-                    📂 Category: %s
+                    Title: %s
+                    Author: %s
+                    ISBN: %s
+                    Category: %s
                     ------------------------------
                     """,
                     b.getTitle(), b.getAuthor(), b.getISBN(), b.getCategory());
