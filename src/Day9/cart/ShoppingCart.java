@@ -153,6 +153,7 @@ public class ShoppingCart {
 
         item.setQuantity(newQuantity);
         System.out.println("Updated quantity to " + newQuantity);
+        appliedDiscounts.removeIf(ad -> ad.getDiscount().appliesToItem(item));
         this.lastUpdatedAt = System.currentTimeMillis();
     }
 

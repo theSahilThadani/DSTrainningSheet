@@ -21,8 +21,8 @@ public class Discount {
     private int usageCount;
     private boolean stackable;
 
-    public Discount(String Code, DiscountType type, double value, int priority, LocalDateTime validFrom, LocalDateTime validUntil, int maxUses, double minCartValue) {
-     validateDiscount(Code, type, value, maxUses, minCartValue);
+    public Discount(String code, DiscountType type, double value, int priority, LocalDateTime validFrom, LocalDateTime validUntil, int maxUses, double minCartValue) {
+     validateDiscount(code, type, value, maxUses, minCartValue);
         this.discountID = UUID.randomUUID().toString();
         this.code = code.toUpperCase();
         this.discountType = type;
