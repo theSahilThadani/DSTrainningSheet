@@ -94,7 +94,7 @@ public class Main {
         List<Product> all = service.getAllProducts();
         System.out.println("\nProducts (" + all.size() + "):");
         for (Product p : all) {
-            System.out.println(" - " + p.getProductID() + " :: " + p);
+            System.out.println(" - " + p.getProductId() + " :: " + p);
         }
     }
 

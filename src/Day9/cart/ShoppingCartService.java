@@ -27,7 +27,7 @@ public class ShoppingCartService {
 
     public void registerProduct(Product product) {
         if (product == null) throw new IllegalArgumentException("Product cannot be null");
-        products.put(product.getProductID(), product);
+        products.put(product.getProductId(), product);
         System.out.println("Registered product: " + product.getName());
     }
 
@@ -66,12 +66,6 @@ public class ShoppingCartService {
         Product product = products.get(productId);
         if (product == null) throw new IllegalArgumentException("Product not found");
         cart.addToWishlist(product);
-    }
-
-    public int getTotalActiveCarts() { return carts.size(); }
-
-    public double getTotalCartValue() {
-        return carts.values().stream().mapToDouble(ShoppingCart::calculateGrandTotal).sum();
     }
 
     public void displayAllCarts() {

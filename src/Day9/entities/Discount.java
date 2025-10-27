@@ -95,7 +95,7 @@ public class Discount {
             return false;
         }
 
-        String productId = item.getProduct().getProductID();
+        String productId = item.getProduct().getProductId();
         String category = item.getProduct().getCategory();
 
         // If specific products are listed, must match
@@ -138,10 +138,6 @@ public class Discount {
         this.usageCount++;
     }
 
-
-    public boolean canApply(CartItem item, double cartTotal) {
-        return isValid() && appliesToItem(item) && cartTotal >= minCartValue;
-    }
 
     @Override
     public String toString() {

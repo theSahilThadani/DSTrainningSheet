@@ -1,22 +1,22 @@
 package Day9.entities;
 
 public class Product {
-    private String productID;
+    private String productId;
     private String name;
     private double price;
     private int stockQuantity;
     private String category;
 
-    public Product(String productID, String name, double price, int stockQuantity, String category) {
-        ValidateProduct(productID, name, price, stockQuantity);
-        this.productID = productID;
+    public Product(String productId, String name, double price, int stockQuantity, String category) {
+        validateProduct(productId, name, price, stockQuantity);
+        this.productId = productId;
         this.name = name;
         this.price = price;
         this.stockQuantity = stockQuantity;
         this.category = category;
     }
 
-    public void ValidateProduct(String id, String name, double price, int stock) {
+    public void validateProduct(String id, String name, double price, int stock) {
         if (id == null || id.trim().isEmpty()) {
             throw new IllegalArgumentException("Product ID cannot be empty");
         }
@@ -31,7 +31,7 @@ public class Product {
         }
     }
 
-    public String getProductID() { return productID; }
+    public String getProductId() { return productId; }
     public String getName() { return name; }
     public double getPrice() { return price; }
     public int getStockQuantity() { return stockQuantity; }

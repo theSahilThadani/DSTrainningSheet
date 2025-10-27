@@ -4,22 +4,6 @@ import Day9.entities.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-/**
- * Shopping Cart with real-time updates and discount management
- *
- * Data Structure Strategy:
- * - ArrayList for items (O(1) iteration)
- * - HashMap for item ID index (O(1) lookup)
- * - TreeMap for discounts by priority (O(log n) ordered access)
- * - HashMap for discount codes (O(1) lookup)
- * - LinkedHashSet for wishlist (maintains insertion order)
- *
- * Time Complexity:
- * - Add item: O(1)
- * - Remove item: O(1)
- * - Apply discount: O(log n)
- * - Get total: O(n)
- */
 public class ShoppingCart {
     private final String cartId;
     private final String userId;
@@ -46,10 +30,7 @@ public class ShoppingCart {
     private double taxRate;
     private String couponCode;
 
-    // Constants
-    private static final double MAX_CART_VALUE = 1_000_000;
     private static final int MAX_ITEMS_IN_CART = 500;
-    private static final int CART_EXPIRY_HOURS = 24;
 
     public ShoppingCart(String userId) {
         validateUserId(userId);
@@ -95,7 +76,7 @@ public class ShoppingCart {
         }
 
         // Check if product already in cart
-        CartItem existing = itemsByProductId.get(product.getProductID());
+        CartItem existing = itemsByProductId.get(product.getProductId());
         if (existing != null) {
             // Update quantity
             int newQuantity = existing.getQuantity() + quantity;
@@ -110,7 +91,7 @@ public class ShoppingCart {
             CartItem cartItem = new CartItem(product, quantity);
             items.add(cartItem);
             itemIndexById.put(cartItem.getCartItemId(), items.size() - 1);
-            itemsByProductId.put(product.getProductID(), cartItem);
+            itemsByProductId.put(product.getProductId(), cartItem);
             System.out.println("Added " + quantity + "x " + product.getName());
         }
 
@@ -247,9 +228,6 @@ public class ShoppingCart {
     }
 
 
-    public List<AppliedDiscount> getAppliedDiscounts() {
-        return new ArrayList<>(appliedDiscounts);
-    }
 
 
     public synchronized void addToWishlist(Product product) {
@@ -257,7 +235,7 @@ public class ShoppingCart {
             throw new IllegalArgumentException("Product cannot be null");
         }
 
-        WishlistItem existing = wishlistById.get(product.getProductID());
+        WishlistItem existing = wishlistById.get(product.getProductId());
         if (existing != null) {
             System.out.println("Already in wishlist");
             return;
@@ -265,7 +243,7 @@ public class ShoppingCart {
 
         WishlistItem item = new WishlistItem(product);
         wishlist.add(item);
-        wishlistById.put(product.getProductID(), item);
+        wishlistById.put(product.getProductId(), item);
         System.out.println("Added to wishlist: " + product.getName());
     }
 
@@ -288,15 +266,6 @@ public class ShoppingCart {
         addItem(wishlistItem.getProduct(), 1);
         removeFromWishlist(productId);
         System.out.println("Moved to cart from wishlist");
-    }
-
-
-    public List<Object> getWishlist() {
-        return new ArrayList<>(wishlist);
-    }
-
-    public int getWishlistSize() {
-        return wishlist.size();
     }
 
     public double calculateSubtotal() {
@@ -347,15 +316,6 @@ public class ShoppingCart {
         this.shippingCost = shippingCost;
     }
 
-    public double getShippingCost() { return shippingCost; }
-    public double getTaxRate() { return taxRate; }
-
-
-    public boolean hasExpired() {
-        long ageHours = (System.currentTimeMillis() - lastUpdatedAt) / (1000 * 60 * 60);
-        return ageHours > CART_EXPIRY_HOURS;
-    }
-
 
     public void checkout() {
         if (items.isEmpty()) {
@@ -363,17 +323,6 @@ public class ShoppingCart {
         }
         this.status = CartStatus.CHECKED_OUT;
         System.out.println(" Checkout complete. Total: ₹" + String.format("%.2f", calculateGrandTotal()));
-    }
-
-
-    public synchronized void clear() {
-        items.clear();
-        itemIndexById.clear();
-        itemsByProductId.clear();
-        appliedDiscounts.clear();
-        this.status = CartStatus.ACTIVE;
-        this.couponCode = null;
-        System.out.println("Cart cleared");
     }
 
 

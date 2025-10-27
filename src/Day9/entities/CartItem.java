@@ -39,11 +39,6 @@ public class CartItem {
         this.lastUpdatedAt = System.currentTimeMillis();
     }
 
-    public synchronized void addToQuantity(int amount) {
-        this.quantity = quantity;
-        setQuantity(this.quantity + amount);
-    }
-
     public double getTotalPrice() {
         return product.getPrice() * quantity;
     }
