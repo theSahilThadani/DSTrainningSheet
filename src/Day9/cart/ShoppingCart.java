@@ -19,7 +19,7 @@ public class ShoppingCart {
     private final ConcurrentHashMap<String, Discount> discountsByCode;     // O(1) code lookup
 
     // Wishlist
-    private final Set<Object> wishlist;
+    private final Set<WishlistItem> wishlist;
     private final ConcurrentHashMap<String, WishlistItem> wishlistById;
 
     // Metadata
