@@ -1,11 +1,11 @@
 package Day10.utils;
 
-import java.util.Random;
+import java.security.SecureRandom;
 
 public class CodeGenerator {
     private static final String CHARSET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-";
     private static final int DEFAULT_LENGTH = 6;
-    private static final Random random = new Random();
+    private static final SecureRandom random = new SecureRandom();
     private static long sequenceCounter = 1000000;
 
     //this will generate random short code in O(N)

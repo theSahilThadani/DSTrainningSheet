@@ -4,18 +4,28 @@ import Day10.entities.URLData;
 import Day10.repositories.URLRepository;
 import Day10.utils.CodeGenerator;
 import java.util.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class URLShortenService {
     private final URLRepository repository;
+    private final ScheduledExecutorService scheduler;
     private static final int MAX_RETRIES = 5;
     private long totalURLsCreated = 0;
     private long totalClicks = 0;
 
     public URLShortenService(URLRepository repository) {
         this.repository = repository;
+        this.scheduler = Executors.newScheduledThreadPool(1, r -> {
+            Thread t = new Thread(r, "URLCleanup-Thread");
+            t.setDaemon(true);
+            return t;
+        });
+        startCleanupTask();
     }
 
-    public String shortenURL(String originalURL, String userId) {
+    public synchronized String shortenURL(String originalURL, String userId) {
         if (originalURL == null || originalURL.isEmpty()) {
             throw new IllegalArgumentException("URL cannot be empty");
         }
@@ -37,6 +47,14 @@ public class URLShortenService {
         System.out.println("URL shortened: " + shortCode + " → " + originalURL);
 
         return shortCode;
+    }
+
+    private void startCleanupTask() {
+        scheduler.scheduleAtFixedRate(
+                this::cleanExpiredURLs,
+                1, 24, TimeUnit.HOURS
+        );
+        System.out.println("Started background cleanup task");
     }
 
      // Shorten URL with custom short code - O(1)
@@ -121,6 +139,10 @@ public class URLShortenService {
         if (urlData == null) {
             throw new IllegalArgumentException("Short code not found");
         }
+        if (urlData.isExpired()) {
+            repository.delete(shortCode);
+            throw new IllegalArgumentException("Short URL has expired");
+        }
         return urlData;
     }
 
@@ -145,5 +167,17 @@ public class URLShortenService {
 
         // Fallback and use hybrid code with timestamp
         return CodeGenerator.generateHybridCode();
+    }
+    public void shutdown() {
+        scheduler.shutdown();
+        try {
+            if (!scheduler.awaitTermination(10, TimeUnit.SECONDS)) {
+                scheduler.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            scheduler.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+        System.out.println("Service shutdown complete");
     }
 }

@@ -1,14 +1,15 @@
 package Day10.entities;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public final class URLData {
     private final String shortCode;
     private final String originalURL;
     private final String userId;
-    private final long createdAt;
-    private final long expiresAt;
-    private volatile int clicks;
+    private volatile long createdAt;
+    private volatile long expiresAt;
+    private final AtomicInteger clicks;
 
     private static final long DEFAULT_TTL_MS = 30L * 24 * 60 * 60 * 1000; //expiry in 30 days
     private static final String URL_PATTERN = "^https?://.*|^www\\..*";
@@ -29,7 +30,7 @@ public final class URLData {
         this.userId = userId != null ? userId : "UserDemo";
         this.createdAt = System.currentTimeMillis();
         this.expiresAt = expiresAt;
-        this.clicks = 0;
+        this.clicks = new AtomicInteger(0);;
     }
 
 
@@ -56,7 +57,7 @@ public final class URLData {
     public String getUserId() { return userId; }
     public long getCreatedAt() { return createdAt; }
     public long getExpiresAt() { return expiresAt; }
-    public int getClicks() { return clicks; }
+    public int getClicks() { return clicks.get(); }
 
      // Check if URL has expired - O(1)
     public boolean isExpired() {
@@ -71,8 +72,10 @@ public final class URLData {
 
      // Increment click count (atomic operation) - O(1)
     public synchronized void incrementClicks() {
-        this.clicks++;
+        clicks.incrementAndGet();;
     }
+
+
 
     @Override
     public boolean equals(Object o) {

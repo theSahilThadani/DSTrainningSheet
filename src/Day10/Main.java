@@ -7,7 +7,6 @@ import Day10.services.URLShortenService;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
-
 public class Main {
 
     public static void main(String[] args) {
@@ -43,6 +42,8 @@ public class Main {
                     System.out.println("Error: " + e.getMessage());
                 }
             }
+        } finally {
+            service.shutdown();
         }
     }
 
@@ -74,18 +75,15 @@ public class Main {
         System.out.println("Custom short code: " + code);
     }
 
-    // 3
     private static void handleResolve(Scanner sc, URLShortenService service) {
         String code = readLine(sc, "Enter short code: ");
         String original = service.getOriginalURL(code);
         System.out.println("🔗 Original URL: " + original);
     }
 
-    // 4
     private static void handleUrlDetails(Scanner sc, URLShortenService service) {
         String code = readLine(sc, "Enter short code: ");
         URLData data = service.getURLDetails(code);
-        // Prefer a rich toString if you have toDetailedString(), otherwise print fields
         try {
             var method = URLData.class.getMethod("toDetailedString");
             Object s = method.invoke(data);
@@ -98,7 +96,6 @@ public class Main {
         }
     }
 
-    // 5
     private static void handleUserUrls(Scanner sc, URLShortenService service) {
         String user = readLine(sc, "User ID: ");
         List<URLData> list = service.getUserURLs(user);
@@ -117,7 +114,6 @@ public class Main {
         }
     }
 
-    // 6
     private static void handleTopClicked(Scanner sc, URLShortenService service) {
         int n = readInt(sc, "Show top N: ");
         List<URLData> top = service.getTopClickedURLs(n);
@@ -135,7 +131,6 @@ public class Main {
         }
     }
 
-    // 7
     private static void handleDelete(Scanner sc, URLShortenService service) {
         String code = readLine(sc, "Short code to delete: ");
         String user = readLine(sc, "User ID: ");
@@ -143,7 +138,6 @@ public class Main {
         System.out.println(ok ? "Deleted" : " Not found or not authorized");
     }
 
-    // 8
     private static void handleSimulateClicks(Scanner sc, URLShortenService service) {
         String code = readLine(sc, "Short code: ");
         int times = readInt(sc, "Number of clicks to simulate: ");
@@ -158,8 +152,6 @@ public class Main {
         URLData data = service.getURLDetails(code);
         System.out.println("Total clicks now: " + (data != null ? getSafeLong(data, URLData::getClicks, 0) : 0));
     }
-
-    // Helpers
 
     private static String readLine(Scanner sc, String prompt) {
         System.out.print(prompt);
