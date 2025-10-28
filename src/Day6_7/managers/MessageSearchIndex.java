@@ -94,7 +94,7 @@ public class MessageSearchIndex {
             return Collections.emptySet();
         }
 
-        // Find smallest result set (optimization)
+        // Find the smallest result set (optimization)
         Set<Message> smallest = null;
         int minSize = Integer.MAX_VALUE;
 
@@ -117,7 +117,7 @@ public class MessageSearchIndex {
             finalResults.retainAll(results);  // Intersection
 
             if (finalResults.isEmpty()) {
-                break;  // Short-circuit
+                break;  // Short circuit
             }
         }
 
