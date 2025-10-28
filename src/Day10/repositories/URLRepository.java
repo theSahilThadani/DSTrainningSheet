@@ -18,7 +18,7 @@ public class URLRepository {
     private final ReadWriteLock expiryLock = new ReentrantReadWriteLock();
 
 
-    public synchronized void save(URLData urlData) {
+    public void save(URLData urlData) {
         //this will save url data into this repo
         if(urlData == null){
             throw new IllegalArgumentException("URLData cannot be null");

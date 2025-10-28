@@ -12,7 +12,6 @@ public final class URLData {
     private final AtomicInteger clicks;
 
     private static final long DEFAULT_TTL_MS = 30L * 24 * 60 * 60 * 1000; //expiry in 30 days
-    private static final String URL_PATTERN = "^https?://.*|^www\\..*";
     private static final String CODE_PATTERN = "^[a-zA-Z0-9_-]{4,20}$";
 
 
@@ -43,11 +42,20 @@ public final class URLData {
         if (originalURL == null || originalURL.trim().isEmpty()) {
             throw new IllegalArgumentException("Original URL cannot be empty");
         }
-        if (!originalURL.matches(URL_PATTERN)) {
+        if (!isValidURL(originalURL)) {
             throw new IllegalArgumentException("Invalid URL format: " + originalURL);
         }
         if (!shortCode.matches(CODE_PATTERN)) {
             throw new IllegalArgumentException("Short code must be 4-20 alphanumeric characters, dash, or underscore");
+        }
+    }
+
+    private boolean isValidURL(String url) {
+        try {
+            new java.net.URL(url);
+            return url.startsWith("http://") || url.startsWith("https://");
+        } catch (java.net.MalformedURLException e) {
+            return false;
         }
     }
 
@@ -72,7 +80,7 @@ public final class URLData {
 
      // Increment click count (atomic operation) - O(1)
     public synchronized void incrementClicks() {
-        clicks.incrementAndGet();;
+        clicks.incrementAndGet();
     }
 
 
@@ -93,6 +101,6 @@ public final class URLData {
     @Override
     public String toString() {
         return String.format("URLData{code='%s', url='%s', clicks=%d, expires=%s}",
-                shortCode, originalURL, clicks, isExpired() ? "EXPIRED" : "ACTIVE");
+                shortCode, originalURL, clicks.get(), isExpired() ? "EXPIRED" : "ACTIVE");
     }
 }

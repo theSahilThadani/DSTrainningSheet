@@ -23,14 +23,17 @@ public class ShoppingCart {
     private final ConcurrentHashMap<String, WishlistItem> wishlistById;
 
     // Metadata
-    private CartStatus status;
     private final long createdAt;
-    private long lastUpdatedAt;
-    private double shippingCost;
-    private double taxRate;
-    private String couponCode;
+    private volatile CartStatus status;
+    private volatile long lastUpdatedAt;
+    private volatile double shippingCost;
+    private volatile double taxRate;
+    private volatile String couponCode;
 
     private static final int MAX_ITEMS_IN_CART = 500;
+    private final java.util.concurrent.locks.ReadWriteLock discountLock =
+            new java.util.concurrent.locks.ReentrantReadWriteLock();
+
 
     public ShoppingCart(String userId) {
         validateUserId(userId);
@@ -61,7 +64,8 @@ public class ShoppingCart {
     }
 
 
-    public synchronized void addItem(Product product, int quantity) {
+    public void addItem(Product product, int quantity) {
+        // Validation
         if (product == null) {
             throw new IllegalArgumentException("Product cannot be null");
         }
@@ -78,24 +82,28 @@ public class ShoppingCart {
         // Check if product already in cart
         CartItem existing = itemsByProductId.get(product.getProductId());
         if (existing != null) {
-            // Update quantity
-            int newQuantity = existing.getQuantity() + quantity;
-            if (product.isInStock(newQuantity)) {
-                existing.setQuantity(newQuantity);
-                System.out.println("Updated quantity for " + product.getName());
-            } else {
-                throw new IllegalArgumentException("Cannot add more: insufficient stock");
+            synchronized(existing) {
+                int newQuantity = existing.getQuantity() + quantity;
+                if (product.isInStock(newQuantity)) {
+                    existing.setQuantity(newQuantity);
+                    System.out.println("Updated quantity for " + product.getName());
+                } else {
+                    throw new IllegalArgumentException("Cannot add more: insufficient stock");
+                }
             }
         } else {
-            // Add new item
-            CartItem cartItem = new CartItem(product, quantity);
-            items.add(cartItem);
-            itemIndexById.put(cartItem.getCartItemId(), items.size() - 1);
-            itemsByProductId.put(product.getProductId(), cartItem);
-            System.out.println("Added " + quantity + "x " + product.getName());
+            synchronized(items) {
+                CartItem cartItem = new CartItem(product, quantity);
+                items.add(cartItem);
+                itemIndexById.put(cartItem.getCartItemId(), items.size() - 1);
+                itemsByProductId.put(product.getProductId(), cartItem);
+                System.out.println("Added " + quantity + "x " + product.getName());
+            }
         }
 
-        this.lastUpdatedAt = System.currentTimeMillis();
+        synchronized(this) {
+            this.lastUpdatedAt = System.currentTimeMillis();
+        }
     }
 
     public synchronized void removeItem(String productId) {
@@ -159,13 +167,19 @@ public class ShoppingCart {
         if (discount == null) {
             throw new IllegalArgumentException("Discount cannot be null");
         }
-        discountsByCode.put(discount.getCode(), discount);
-        discountsByPriority.put(discount.getPriority(), discount);
-        System.out.println(" Registered discount: " + discount.getCode());
+
+        discountLock.writeLock().lock();
+        try {
+            discountsByCode.put(discount.getCode(), discount);
+            discountsByPriority.put(discount.getPriority(), discount);
+            System.out.println(" Registered discount: " + discount.getCode());
+        } finally {
+            discountLock.writeLock().unlock();
+        }
     }
 
 
-    public synchronized void applyCoupon(String code) {
+    public void applyCoupon(String code) {
         if (code == null || code.trim().isEmpty()) {
             throw new IllegalArgumentException("Coupon code cannot be empty");
         }
@@ -173,45 +187,48 @@ public class ShoppingCart {
             throw new IllegalArgumentException("Cart is empty");
         }
 
-        Discount discount = discountsByCode.get(code.toUpperCase());
-        if (discount == null) {
-            throw new IllegalArgumentException("Invalid coupon code: " + code);
-        }
-
-        // Check if already applied
-        if (appliedDiscounts.stream()
-                .anyMatch(ad -> ad.getDiscount().getCode().equals(code.toUpperCase()))) {
-            throw new IllegalArgumentException("Coupon already applied");
-        }
-
-        // Check if discount is stackable
-        if (!discount.isStackable() && !appliedDiscounts.isEmpty()) {
-            throw new IllegalArgumentException("Cannot stack non-stackable coupons");
-        }
-
-        // Calculate discount
-        double cartTotal = calculateSubtotal();
-        if (cartTotal < discount.getMinCartValue()) {
-            throw new IllegalArgumentException(
-                    String.format("Minimum cart value ₹%.2f required", discount.getMinCartValue()));
-        }
-
-        double discountAmount = 0;
-        for (CartItem item : items) {
-            if (discount.appliesToItem(item)) {
-                discountAmount += discount.calculateDiscount(item);
+        synchronized(this) {
+            Discount discount = discountsByCode.get(code.toUpperCase());
+            if (discount == null) {
+                throw new IllegalArgumentException("Invalid coupon code: " + code);
             }
-        }
 
-        if (discountAmount > 0) {
-            AppliedDiscount applied = new AppliedDiscount(discount, discountAmount);
-            appliedDiscounts.add(applied);
-            discount.incrementUsage();
-            this.couponCode = code.toUpperCase();
-            System.out.println("Applied coupon: " + code + " (-₹" + String.format("%.2f", discountAmount) + ")");
-        }
+            // Check if already applied
+            if (appliedDiscounts.stream()
+                    .anyMatch(ad -> ad.getDiscount().getCode().equals(code.toUpperCase()))) {
+                throw new IllegalArgumentException("Coupon already applied");
+            }
 
-        this.lastUpdatedAt = System.currentTimeMillis();
+            // Check if discount is stackable
+            if (!discount.isStackable() && !appliedDiscounts.isEmpty()) {
+                throw new IllegalArgumentException("Cannot stack non-stackable coupons");
+            }
+
+            // Validate discount
+            double cartTotal = calculateSubtotal();
+            if (cartTotal < discount.getMinCartValue()) {
+                throw new IllegalArgumentException(
+                        String.format("Minimum cart value ₹%.2f required", discount.getMinCartValue()));
+            }
+
+            // Calculate discount
+            double discountAmount = 0;
+            for (CartItem item : items) {
+                if (discount.appliesToItem(item)) {
+                    discountAmount += discount.calculateDiscount(item);
+                }
+            }
+
+            if (discountAmount > 0) {
+                AppliedDiscount applied = new AppliedDiscount(discount, discountAmount);
+                appliedDiscounts.add(applied);
+                discount.incrementUsage();
+                this.couponCode = code.toUpperCase();
+                System.out.println("Applied coupon: " + code + " (-₹" + String.format("%.2f", discountAmount) + ")");
+            }
+
+            this.lastUpdatedAt = System.currentTimeMillis();
+        }
     }
 
     public synchronized void removeCoupon(String code) {
