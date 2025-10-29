@@ -106,33 +106,40 @@ public class ShoppingCart {
         }
     }
 
-    public synchronized void removeItem(String productId) {
-        CartItem item = itemsByProductId.get(productId);
+    public void removeItem(String productId) {
+        // Remove from primary index first
+        CartItem item = itemsByProductId.remove(productId);
         if (item == null) {
             System.out.println("Item not found");
             return;
         }
 
-        // Remove from all indexes
-        items.remove(item);
-        itemIndexById.remove(item.getCartItemId());
-        itemsByProductId.remove(productId);
+        // Synchronize only list modifications
+        synchronized(items) {
+            items.remove(item);
+            itemIndexById.remove(item.getCartItemId());
+        }
 
         // Remove related discounts
         appliedDiscounts.removeIf(ad -> ad.getDiscount().appliesToItem(item));
 
         System.out.println("Removed " + item.getProduct().getName());
-        this.lastUpdatedAt = System.currentTimeMillis();
+
+        // Update metadata
+        synchronized(this) {
+            this.lastUpdatedAt = System.currentTimeMillis();
+        }
     }
 
-    public synchronized void updateItemQuantity(String productId, int newQuantity) {
-        CartItem item = itemsByProductId.get(productId);
-        if (item == null) {
-            throw new IllegalArgumentException("Item not found");
-        }
+    public void updateItemQuantity(String productId, int newQuantity) {
         if (newQuantity <= 0) {
             removeItem(productId);
             return;
+        }
+
+        CartItem item = itemsByProductId.get(productId);
+        if (item == null) {
+            throw new IllegalArgumentException("Item not found");
         }
 
         Product product = item.getProduct();
@@ -140,10 +147,16 @@ public class ShoppingCart {
             throw new IllegalArgumentException("Insufficient stock");
         }
 
-        item.setQuantity(newQuantity);
+        synchronized(item) {
+            item.setQuantity(newQuantity);
+        }
+
         System.out.println("Updated quantity to " + newQuantity);
         appliedDiscounts.removeIf(ad -> ad.getDiscount().appliesToItem(item));
-        this.lastUpdatedAt = System.currentTimeMillis();
+
+        synchronized(this) {
+            this.lastUpdatedAt = System.currentTimeMillis();
+        }
     }
 
     public CartItem getItem(String productId) {

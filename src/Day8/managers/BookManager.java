@@ -19,29 +19,56 @@ public class BookManager {
     }
 
      // Time Complexity: O(m + n) where m = title length, n = author length
-    public boolean addBook(Book book) {
-        if (indexISBN.containsKey(book.getISBN().toLowerCase())) {
-            return false; // Book already exists
-        }
+     public boolean addBook(Book book) {
+         if (book == null) {
+             throw new IllegalArgumentException("Book cannot be null");
+         }
 
-        String isbnKey = book.getISBN().toLowerCase();
+         // Validate ISBN
+         String isbn = book.getISBN();
+         if (isbn == null || isbn.trim().isEmpty()) {
+             throw new IllegalArgumentException("ISBN cannot be empty");
+         }
+         if (!isValidISBN(isbn)) {
+             throw new IllegalArgumentException("Invalid ISBN format");
+         }
 
-        // Add to primary index
-        indexISBN.put(isbnKey, book);
+         // Validate title
+         if (book.getTitle() == null || book.getTitle().trim().isEmpty()) {
+             throw new IllegalArgumentException("Title cannot be empty");
+         }
 
-        // Add to Trie indexes
-        trieTitle.insert(book.getTitle(), isbnKey);
-        trieAuthor.insert(book.getAuthor(), isbnKey);
+         // Validate author
+         if (book.getAuthor() == null || book.getAuthor().trim().isEmpty()) {
+             throw new IllegalArgumentException("Author cannot be empty");
+         }
 
-        // Add to category index
-        indexCategory.computeIfAbsent(book.getCategory().toLowerCase(),
-                k -> new ArrayList<>()).add(isbnKey);
+         // Validate category
+         if (book.getCategory() == null || book.getCategory().trim().isEmpty()) {
+             throw new IllegalArgumentException("Category cannot be empty");
+         }
 
-        return true;
+         String isbnKey = isbn.toLowerCase();
+         if (indexISBN.containsKey(isbnKey)) {
+             return false;
+         }
+
+         indexISBN.put(isbnKey, book);
+         trieTitle.insert(book.getTitle().toLowerCase(), isbnKey);
+         trieAuthor.insert(book.getAuthor().toLowerCase(), isbnKey);
+         indexCategory.computeIfAbsent(book.getCategory().toLowerCase(),
+                 k -> new ArrayList<>()).add(isbnKey);
+
+         return true;
+     }
+
+    private boolean isValidISBN(String isbn) {
+        // Simple validation ISBN is 10 or 13 digits
+        String clean = isbn.replaceAll("[^0-9X]", "");
+        return clean.length() == 10 || clean.length() == 13;
     }
 
      // Time Complexity: O(m + n + k) where m = title length, n = author length, k = category size
-
     public boolean removeBook(String isbn) {
         String isbnKey = isbn.toLowerCase();
         if (!indexISBN.containsKey(isbnKey)) {
@@ -73,22 +100,26 @@ public class BookManager {
     }
 
      // Time Complexity: O(m) where m = title length
-    public List<Book> getBookByTitle(String title) {
-        Set<String> isbns = new Trie().search(title);
-        List<Book> books = new ArrayList<>();
-        for (String isbn : isbns) {
-            Book book = indexISBN.get(isbn);
-            if (book != null) {
-                books.add(book);
-            }
-        }
-        return books;
-    }
+     public List<Book> getBookByTitle(String title) {
+         if (title == null || title.trim().isEmpty()) {
+             return new ArrayList<>();
+         }
+
+         Set<String> isbns = trieTitle.search(title.toLowerCase());
+         List<Book> books = new ArrayList<>();
+         for (String isbn : isbns) {
+             Book book = indexISBN.get(isbn);
+             if (book != null) {
+                 books.add(book);
+             }
+         }
+         return books;
+     }
 
      // Time Complexity O(m + k) where m = prefix length, k = number of results
 
     public List<Book> searchTitleByPrefix(String prefix) {
-        List<String> isbns = trieTitle.searchByPrefix(prefix);
+        List<String> isbns = trieTitle.searchByPrefix(prefix.toLowerCase());
         List<Book> books = new ArrayList<>();
         for (String isbn : isbns) {
             Book book = indexISBN.get(isbn);
@@ -103,7 +134,7 @@ public class BookManager {
     // Time Complexity: O(n) where n = author name length
 
     public List<Book> getBookByAuthor(String author) {
-        Set<String> isbns = trieAuthor.search(author);
+        Set<String> isbns = trieAuthor.search(author.toLowerCase());
         List<Book> books = new ArrayList<>();
         for (String isbn : isbns) {
             Book book = indexISBN.get(isbn);
@@ -118,7 +149,7 @@ public class BookManager {
      // Time Complexity O(n + k) where n = prefix length k = number of results
 
     public List<Book> searchAuthorByPrefix(String prefix) {
-        List<String> isbns = trieAuthor.searchByPrefix(prefix);
+        List<String> isbns = trieAuthor.searchByPrefix(prefix.toLowerCase());
         List<Book> books = new ArrayList<>();
         for (String isbn : isbns) {
             Book book = indexISBN.get(isbn);

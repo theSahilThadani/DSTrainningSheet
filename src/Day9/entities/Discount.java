@@ -83,8 +83,10 @@ public class Discount {
         }
 
         // Check usage limit
-        if (maxUses > 0 && usageCount >= maxUses) {
-            return false;
+        synchronized(this) {
+            if (maxUses > 0 && usageCount >= maxUses) {
+                return false;
+            }
         }
 
         return true;

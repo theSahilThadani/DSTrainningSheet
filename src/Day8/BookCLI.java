@@ -91,7 +91,7 @@ public class BookCLI {
                 .setAuthor(author)
                 .setDescription(description)
                 .setCategory(category)
-                .bookbuilder();
+                .build();
 
         if (bookManager.addBook(book)) {
             System.out.println("Book added successfully!");
