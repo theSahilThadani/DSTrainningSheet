@@ -85,18 +85,23 @@ public class BookCLI {
         System.out.print("Enter Category: ");
         String category = scanner.nextLine().trim();
 
-        Book book = new Book.Bookbuilder()
-                .setISBN(isbn)
-                .setTitle(title)
-                .setAuthor(author)
-                .setDescription(description)
-                .setCategory(category)
-                .build();
+        try {
 
-        if (bookManager.addBook(book)) {
-            System.out.println("Book added successfully!");
-        } else {
-            System.out.println("Book with this ISBN already exists.");
+            Book book = new Book.Bookbuilder()
+                    .setISBN(isbn)
+                    .setTitle(title)
+                    .setAuthor(author)
+                    .setDescription(description)
+                    .setCategory(category)
+                    .build();
+
+            if (bookManager.addBook(book)) {
+                System.out.println("✅ Book added successfully!");
+            } else {
+                System.out.println("Book with this ISBN already exists.");
+            }
+        } catch (IllegalArgumentException e) {
+            System.out.println("Error: " + e.getMessage());
         }
     }
 

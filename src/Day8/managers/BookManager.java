@@ -4,18 +4,19 @@ import Day8.entities.Book;
 import Day6_7.datastructures.Trie;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class BookManager {
-    private HashMap<String, Book> indexISBN;
+    private Map<String, Book> indexISBN;
     private Trie<String> trieTitle;           // Store ISBN in trie values
     private Trie<String> trieAuthor;          // Store ISBN in trie values
-    private HashMap<String, List<String>> indexCategory;
+    private Map<String, List<String>> indexCategory;
 
     public BookManager() {
-        this.indexISBN = new HashMap<>();
+        this.indexISBN = new ConcurrentHashMap<>();
         this.trieTitle = new Trie<>();
         this.trieAuthor = new Trie<>();
-        this.indexCategory = new HashMap<>();
+        this.indexCategory = new ConcurrentHashMap<>();
     }
 
      // Time Complexity: O(m + n) where m = title length, n = author length
@@ -70,6 +71,9 @@ public class BookManager {
 
      // Time Complexity: O(m + n + k) where m = title length, n = author length, k = category size
     public boolean removeBook(String isbn) {
+        if (isbn == null || isbn.trim().isEmpty()) {
+            return false;
+        }
         String isbnKey = isbn.toLowerCase();
         if (!indexISBN.containsKey(isbnKey)) {
             return false;
@@ -78,8 +82,8 @@ public class BookManager {
         Book removedBook = indexISBN.remove(isbnKey);
 
         // Remove from Trie indexes
-        trieTitle.delete(removedBook.getTitle(), isbnKey);
-        trieAuthor.delete(removedBook.getAuthor(), isbnKey);
+        trieTitle.delete(removedBook.getTitle().toLowerCase(), isbnKey);
+        trieAuthor.delete(removedBook.getAuthor().toLowerCase(), isbnKey);
 
         // Remove from category index
         List<String> categoryList = indexCategory.get(removedBook.getCategory().toLowerCase());
@@ -96,6 +100,9 @@ public class BookManager {
      // Time Complexity: O(1)
 
     public Book getBookByISBN(String isbn) {
+        if (isbn == null || isbn.trim().isEmpty()) {
+            return null;
+        }
         return indexISBN.get(isbn.toLowerCase());
     }
 
@@ -119,6 +126,9 @@ public class BookManager {
      // Time Complexity O(m + k) where m = prefix length, k = number of results
 
     public List<Book> searchTitleByPrefix(String prefix) {
+        if (prefix == null || prefix.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
         List<String> isbns = trieTitle.searchByPrefix(prefix.toLowerCase());
         List<Book> books = new ArrayList<>();
         for (String isbn : isbns) {
@@ -134,6 +144,9 @@ public class BookManager {
     // Time Complexity: O(n) where n = author name length
 
     public List<Book> getBookByAuthor(String author) {
+        if (author == null || author.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
         Set<String> isbns = trieAuthor.search(author.toLowerCase());
         List<Book> books = new ArrayList<>();
         for (String isbn : isbns) {
@@ -147,8 +160,10 @@ public class BookManager {
 
 
      // Time Complexity O(n + k) where n = prefix length k = number of results
-
     public List<Book> searchAuthorByPrefix(String prefix) {
+        if (prefix == null || prefix.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
         List<String> isbns = trieAuthor.searchByPrefix(prefix.toLowerCase());
         List<Book> books = new ArrayList<>();
         for (String isbn : isbns) {
@@ -162,8 +177,12 @@ public class BookManager {
 
 
      // Get books by category
-
     public List<Book> getBookByCategory(String category) {
+
+        if (category == null || category.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
         List<String> isbnList = indexCategory.get(category.toLowerCase());
         if (isbnList == null) {
             return new ArrayList<>();
@@ -181,21 +200,18 @@ public class BookManager {
 
 
      // Get all books in catalog
-
     public List<Book> getAllBooks() {
         return new ArrayList<>(indexISBN.values());
     }
 
 
      // Time Complexity: O(1)
-
     public int getTotalBooks() {
         return indexISBN.size();
     }
 
 
      // Check if book exists
-
     public boolean existsBook(String isbn) {
         return indexISBN.containsKey(isbn.toLowerCase());
     }

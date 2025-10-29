@@ -22,24 +22,24 @@ public class Book {
         private String description;
         private String category;
 
-        public Bookbuilder setTitle(String Title){
-            this.title = Title;
+        public Bookbuilder setTitle(String title){
+            this.title = title;
             return this;
         }
-        public Bookbuilder setAuthor(String Author){
-            this.author = Author;
+        public Bookbuilder setAuthor(String author){
+            this.author = author;
             return this;
         }
-        public Bookbuilder setISBN(String ISBN){
-            this.isbn = ISBN;
+        public Bookbuilder setISBN(String isbn){
+            this.isbn = isbn;
             return this;
         }
-        public Bookbuilder setDescription(String Description){
-            this.description = Description;
+        public Bookbuilder setDescription(String description){
+            this.description = description;
             return this;
         }
-        public Bookbuilder setCategory(String Category){
-            this.category = Category;
+        public Bookbuilder setCategory(String category){
+            this.category = category;
             return this;
         }
         public Book build(){
