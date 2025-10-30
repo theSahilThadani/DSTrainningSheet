@@ -16,11 +16,11 @@ public class ConversationManager {
     // Primary storage
     private final HashMap<String, Conversation> conversations;
 
-    //user pair → conversation ID
-    private final HashMap<String, String> userPairIndex;
+    //user pair  conversation ID
+    private final Map<String, String> userPairIndex;
 
-    //user ID → set of conversation IDs
-    private final HashMap<String, Set<String>> userConversations;
+    //user ID set of conversation IDs
+    private final Map<String, Set<String>> userConversations;
 
     // Active conversations cache
     private final LinkedHashMap<String, Conversation> activeCache;
