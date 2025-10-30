@@ -144,7 +144,7 @@ public class Conversation {
     public synchronized boolean undoLastMessage(String userId) {
         Deque<Message> stack = undoStacks.get(userId);
         if (stack == null || stack.isEmpty()) {
-            System.out.println("⚠No messages to undo");
+            System.out.println("No messages to undo");
             return false;
         }
 
