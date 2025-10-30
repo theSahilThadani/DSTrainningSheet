@@ -97,7 +97,7 @@ public class CircularBuffer<T>  implements Iterable<T> {
         // Move tail back
         tail = (tail - 1 + capacity) % capacity;
         T element = (T) buffer[tail];
-        buffer[tail] = null;  // Help GC
+        buffer[tail] = null;
         size--;
 
         return element;
